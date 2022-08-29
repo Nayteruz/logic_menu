@@ -37,10 +37,11 @@ ul {
   padding: 0;
   margin: 0;
   list-style:none;
+  max-width: 1190px;
 }
 
 .list-document {
-  max-width: 600px;
+  /*max-width: 1190px;*/
 }
 
 </style>

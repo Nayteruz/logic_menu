@@ -1,18 +1,21 @@
 <template>
-  <div className="item">
-    <IconOpen @click="showSub = !showSub" :class="{'opened' : showSub, 'no-sub-folder' : !item?.children.length}"/>
-    <h3 className="name">{{ item?.name }}</h3>
-    <h4 className="small-name" v-if="item?.subname">{{ item.subname }}</h4>
-    <div className="icons">
+  <div class="item">
+    <IconOpen @click="showSub = !showSub" :class="{'opened' : showSub, 'no-sub-folder' : !subFolders.length}"/>
+    <h3 class="name">{{ item?.name }}</h3>
+    <ul class="colors" v-if="item?.colors?.length">
+      <li v-for="color in item?.colors"><span :style="{background:color}"></span></li>
+    </ul>
+    <h4 class="small-name" v-if="item?.subname">{{ item.subname }}</h4>
+    <div class="icons">
       <IconEdit/>
       <IconDelete style="width: 19px; height: 21px;" @click="story.deleteFolder(item)"/>
       <IconMove ref="moveEl" style="width: 16px; height: 23px;" @mousedown.left="mouseDown"/>
     </div>
   </div>
   <Transition name="slide-fade">
-    <ul className="sub-folders" v-if="item?.children" v-show="showSub">
-      <li v-for="subItem in item?.children" draggable="true">
-        <ItemListSubFolder :item="subItem" :parentItem="item"/>
+    <ul class="sub-folders" v-if="subFolders.length" v-show="showSub">
+      <li v-for="subItem in subFolders" draggable="true">
+        <ItemListSubFolder :item="subItem"/>
       </li>
     </ul>
   </Transition>
@@ -21,7 +24,7 @@
 
 <script setup>
 
-import {ref} from "vue";
+import {computed, ref} from "vue";
 import IconEdit from "../../icon/IconEdit.vue";
 import IconDelete from "../../icon/IconDelete.vue";
 import IconMove from "../../icon/IconMove.vue";
@@ -42,51 +45,13 @@ const moveEl = ref(null);
 
 const story = useFoldersStore();
 
+const subFolders = computed(() =>{
+  return story.dinamicSubFolder.filter(s=>s.parentId === props.item.id);
+})
+
 const showSub = ref(false);
 
 const mouseDown = (e) => {
-
-
-  /*let bwidth = itemEl.value.offsetWidth;
-  let bheight = itemEl.value.offsetHeight;
-
-  itemShadow.value.style.width = bwidth + 'px';
-  itemShadow.value.style.height = bheight + 'px';
-  shadowShow.value = true;
-
-  itemEl.value.style.width = bwidth + 'px';
-  itemEl.value.classList.add('dragging');
-
-  let coords = getCoords(itemEl.value);
-  let shiftX = e.pageX - coords.left;
-  let shiftY = e.pageY - coords.top;
-
-  itemEl.value.style.position = 'absolute';
-  itemEl.value.style.zIndex = 9999;
-
-  const moveAt = (e) => {
-    itemEl.value.style.left = e.pageX - shiftX + 'px';
-    itemEl.value.style.top = e.pageY - shiftY + 'px';
-  }
-
-  document.onmousemove = function(e) {
-    moveAt(e);
-  }
-
-  document.onmouseup = function (e){
-    document.onmousemove = null;
-    moveEl.value.onmouseup = null;
-    itemEl.value.style = '';
-    itemShadow.value.style = ''
-    shadowShow.value = true;
-    itemEl.value.classList.remove('dragging');
-  }
-
-  moveEl.value.ondragstart = function() {
-    return false;
-  };
-  */
-
   emit('mouseDown', props.item.id);
 }
 
@@ -137,6 +102,23 @@ const mouseDown = (e) => {
     color: #000;
     margin: 0;
     white-space: nowrap;
+  }
+
+  .colors {
+    display: flex;
+    align-items: center;
+    gap:5px;
+    margin-left: 16px;
+
+    span {
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      &:hover {
+        box-shadow: inset 0 0 0 1px #000, 0 4px 4px rgba(0, 0, 0, 0.25);
+      }
+    }
   }
 
   .small-name {

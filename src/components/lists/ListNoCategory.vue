@@ -1,6 +1,6 @@
 <template>
   <ul class="no-folders">
-    <li v-for="item in story.foldersNoCategory" :key="item.id">
+    <li v-for="item in story.dinamicOutFolder" :key="item.id">
       <ItemListNo :item="item"/>
     </li>
   </ul>
@@ -9,7 +9,6 @@
 <script setup>
   import ItemListNo from "./item/ItemListNo.vue";
   import {useFoldersStore} from "../../stores/folders";
-
   const story = useFoldersStore();
 </script>
 

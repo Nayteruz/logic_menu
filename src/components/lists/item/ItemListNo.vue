@@ -1,6 +1,9 @@
 <template>
   <div class="item" draggable="true">
     <h3 class="name">{{ item?.name }}</h3>
+    <ul class="colors" v-if="item?.colors?.length">
+      <li v-for="color in item?.colors"><span :style="{background:color}"></span></li>
+    </ul>
     <h4 class="small-name" v-if="item?.subname" >{{ item.subname }}</h4>
     <div class="icons">
       <IconEdit/>
@@ -41,6 +44,22 @@ const story = useFoldersStore();
     color: #000;
     margin: 0;
     white-space: nowrap;
+  }
+  .colors {
+    display: flex;
+    align-items: center;
+    gap:5px;
+    margin-left: 16px;
+
+    span {
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      &:hover {
+        box-shadow: inset 0 0 0 1px #000, 0 4px 4px rgba(0, 0, 0, 0.25);
+      }
+    }
   }
 
   .small-name {

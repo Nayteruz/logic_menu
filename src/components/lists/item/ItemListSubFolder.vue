@@ -1,10 +1,14 @@
 <template>
   <div class="item-sub-folder" draggable="true">
     <h3 class="name">{{ item?.name }}</h3>
+    <ul class="colors" v-if="item?.colors?.length">
+      <li v-for="color in item?.colors"><span :style="{background:color}"></span></li>
+    </ul>
+    <span class="label" v-if="item?.label">{{ item?.label }}</span>
     <h4 class="small-name" v-if="item?.subname" >{{ item.subname }}</h4>
     <div class="icons">
       <IconEdit/>
-      <IconDelete style="width: 19px; height: 21px;" @click="story.deleteSubFolder(item, parentItem)"/>
+      <IconDelete style="width: 19px; height: 21px;" @click="story.deleteSubFolder(item)"/>
       <IconMove style="width: 16px; height: 23px;"/>
     </div>
   </div>
@@ -22,10 +26,6 @@ const props = defineProps({
     type:Object,
     required: true,
   },
-  parentItem: {
-    type:Object,
-    required: true,
-  }
 });
 
 const story = useFoldersStore();
@@ -41,6 +41,10 @@ const story = useFoldersStore();
   margin-top: -1px;
   margin-left: 16px;
 
+  * {
+    line-height: 1.2;
+  }
+
   .name {
     font-size: 13px;
     font-weight: 400;
@@ -49,11 +53,35 @@ const story = useFoldersStore();
     white-space: nowrap;
   }
 
+  .colors {
+    display: flex;
+    align-items: center;
+    gap:5px;
+    margin-left: 20px;
+
+    span {
+      display: block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      &:hover {
+        box-shadow: inset 0 0 0 1px #000, 0 4px 4px rgba(0, 0, 0, 0.25);
+      }
+    }
+  }
+
+  span.label {
+    display: block;
+    color: #FF238D;
+    font-size: 11px;
+    margin-left: 15px;
+  }
+
   .small-name {
     font-size: 11px;
     font-weight: 400;
     color: #8E9CBB;
-    margin: 2px 0 0 15px;
+    margin:0 0 0 15px;
     white-space: nowrap;
     overflow: hidden;
   }
