@@ -1,41 +1,63 @@
 <template>
-  <ul
-    @drop="onDrop($event, 'itemId')"
-    @dragenter.prevent
-    @dragover.prevent
-  >
+  <ul>
     <li
-      v-for="item in story.foldersCategory"
-      :key="item.id"
-      draggable="true"
-      @dragstart="startDrag($event, item)"
+        v-for="item in story.foldersCategory"
+        :key="item.id"
+        ref="itemLi"
+        :draggable="+item?.id === +isDrag"
+        @dragstart="startDrag($event, item)"
+        @dragend="endDrag($event, item)"
+        @dragenter="enterDrag($event, item)"
+        :class="{'enter' : item?.isEnter}"
     >
-      <ItemList :item="item" />
+      <ItemList
+          :item="item"
+          @mouseDown="mouseDown"
+      />
     </li>
   </ul>
 </template>
 
 <script setup>
 
-  import ItemList from "./item/ItemList.vue";
-  import {useFoldersStore} from "../../stores/folders";
+import ItemList from "./item/ItemList.vue";
+import {useFoldersStore} from "../../stores/folders";
+import {ref} from "vue";
 
-  const story = useFoldersStore();
+const isDrag = ref(null);
 
-  const startDrag = (event, item) => {
-    console.log(item);
-    event.dataTransfer.dropEffect = 'move';
-    event.dataTransfer.effectAllowed = 'move';
-    event.dataTransfer.setData('itemId', item.id);
+const story = useFoldersStore();
+const itemLi = ref(null);
+
+const mouseDown = (id) => {
+  isDrag.value = id;
+}
+
+const startDrag = (e, item) => {
+  e.dataTransfer.dropEffect = 'move';
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('itemId', item.id);
+}
+
+const endDrag = (e, item) => {
+  isDrag.value = false;
+  console.log(item);
+}
+
+const enterDrag = (e, item) => {
+  console.log(item);
+  const itemId = e.dataTransfer.getData('itemId');
+  const itemD = story.foldersCategory.find(i=>i.id === itemId);
+  if(itemD !== undefined){
+    console.log(itemD)
   }
 
-  const onDrop = (event, list) => {
-    const itemId = event.dataTransfer.getData('itemId');
-    console.log(itemId, list)
-    //const item = list.filter(i=>i.id === itemId);
+}
 
-    //item.list = list;
 
-  }
+
+const overDrag = (e, item) => {
+  console.log(item);
+}
 
 </script>
