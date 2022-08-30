@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useFoldersStore = defineStore({
   id: 'folders',
   state: () => ({
+    startDrag: '',
     searchText: '',
     dinamicFolder: [],
     dinamicSubFolder: [],
@@ -20,37 +21,12 @@ export const useFoldersStore = defineStore({
         name: 'Обязательные для трудоустройства',
         subname : 'Документы, без которых невозможно трудоустройство человека на какую бы то ни было должность в компании вне зависимости от гражданства и его паспорта',
         label: '',
-        children: [
-          {
-            id: 5,
-            name: 'Трудовая книжка',
-            subname : 'Для всех',
-            label:'Обязательный'
-          },
-          {
-            id: 6,
-            name: 'СНИЛС',
-            subname : 'Для всех',
-            label:'Обязательный'
-          }
-        ]
       },
       {
         id: 7,
         name: 'Специальные',
         subname : '',
         label: '',
-        children: [
-          {
-            id: 8,
-            name: 'Специальный документ',
-            subname : 'Для всех',
-          },
-          {
-            id: 9,
-            name: 'Еще какой то документ',
-          }
-        ]
       }
     ],
     staticSubFolder: [
@@ -108,7 +84,7 @@ export const useFoldersStore = defineStore({
         subname : '',
       },
       {
-        id: 11,
+        id: 12,
         name: 'Мед. книжка',
         subname : '',
       }
@@ -175,9 +151,9 @@ export const useFoldersStore = defineStore({
         });
 
         this.dinamicOutFolder = this.staticOutFolder.filter(c => {
-          let name = c?.name.toLowerCase();
-          let subname = c?.subname.toLowerCase();
-          if(name.includes(str) || subname.includes(str)){
+          let name = c?.name?.toLowerCase();
+          let subname = c?.subname?.toLowerCase();
+          if(name?.includes(str) || subname?.includes(str)){
             return c;
           }
         });
@@ -195,7 +171,60 @@ export const useFoldersStore = defineStore({
         this.dinamicOutFolder = this.staticOutFolder;
         this.dinamicSubFolder = this.staticSubFolder;
       }
-
-    }
+    },
+    setDraggingF1(itemId){
+      let item = this.staticFolder.find(i=>i.id === itemId);
+      item.dragging = true;
+    },
+    setDraggingF2(itemId){
+      let item = this.staticSubFolder.find(i=>i.id === itemId);
+      item.dragging = true;
+    },
+    setDraggingF3(itemId){
+      let item = this.staticOutFolder.find(i=>i.id === itemId);
+      item.dragging = true;
+    },
+    setDroppingF1(itemId){
+      let item = this.staticFolder.find(i=>i.id === itemId);
+      item.dropping = true;
+    },
+    setDroppingF2(itemId){
+      let item = this.staticSubFolder.find(i=>i.id === itemId);
+      item.dropping = true;
+    },
+    setDroppingF3(itemId){
+      let item = this.staticOutFolder.find(i=>i.id === itemId);
+      item.dropping = true;
+    },
+    removeDroppingF1(){
+      this.staticFolder.map(i=>{
+        i.dropping = false;
+      })
+    },
+    removeDroppingF2(){
+      this.staticSubFolder.map(i=>{
+        i.dropping = false;
+      })
+    },
+    removeDroppingF3(){
+      this.staticOutFolder.map(i=>{
+        i.dropping = false;
+      })
+    },
+    removeDraggingF1(){
+      this.staticFolder.map(i=>{
+        i.dragging = false;
+      })
+    },
+    removeDraggingF2(){
+      this.staticSubFolder.map(i=>{
+        i.dragging = false;
+      })
+    },
+    removeDraggingF3(){
+      this.staticOutFolder.map(i=>{
+        i.dragging = false;
+      })
+    },
   }
 })

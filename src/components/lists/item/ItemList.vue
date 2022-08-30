@@ -9,13 +9,28 @@
     <div class="icons">
       <IconEdit/>
       <IconDelete style="width: 19px; height: 21px;" @click="story.deleteFolder(item)"/>
-      <IconMove ref="moveEl" style="width: 16px; height: 23px;" @mousedown.left="mouseDown"/>
+      <IconMove style="width: 16px; height: 23px;" @mousedown.left="mouseDown"/>
     </div>
   </div>
   <Transition name="slide-fade">
     <ul class="sub-folders" v-if="subFolders.length" v-show="showSub">
-      <li v-for="subItem in subFolders" draggable="true">
-        <ItemListSubFolder :item="subItem"/>
+      <li
+        v-for="subItem in subFolders"
+        :key="subItem.id"
+        :draggable="+subItem?.id === +itemDragId"
+        @dragstart="startDrag($event, subItem.id)"
+        @dragend="endDrag($event, subItem.id)"
+        @dragenter="enterDrag($event, subItem.id)"
+        @dragleave="leaveDrag($event, subItem.id)"
+        @dragover.prevent
+        @drop="onDrop($event, subItem.id)"
+        :class="{'start-drag' : story.startDrag === 'sub', 'dragging' : subItem?.dragging, 'dropping' : subItem?.dropping}"
+      >
+        <ItemListSubFolder
+          :item="subItem"
+          @mouseDownSub="mouseDownSub"
+
+        />
       </li>
     </ul>
   </Transition>
@@ -24,7 +39,7 @@
 
 <script setup>
 
-import {computed, ref} from "vue";
+import {computed, ref, watch} from "vue";
 import IconEdit from "../../icon/IconEdit.vue";
 import IconDelete from "../../icon/IconDelete.vue";
 import IconMove from "../../icon/IconMove.vue";
@@ -39,9 +54,7 @@ const props = defineProps({
   },
 });
 
-const emit = defineEmits(['mouseDown', 'mouseUp'])
-
-const moveEl = ref(null);
+const emit = defineEmits(['mouseDown'])
 
 const story = useFoldersStore();
 
@@ -51,18 +64,96 @@ const subFolders = computed(() =>{
 
 const showSub = ref(false);
 
-const mouseDown = (e) => {
-  emit('mouseDown', props.item.id);
+const itemDragId = ref(null);
+
+const mouseDown = () => {
+  emit('mouseDown', {'id': props.item.id, 'event' : 'main'});
 }
 
+watch(() => story.searchText, (n,o) =>{
+  showSub.value = n !== '';
+})
 
-// const getCoords = (el) => {
-//   let box = el.getBoundingClientRect();
-//   return {
-//     top: box.top + pageYOffset,
-//     left: box.left + pageXOffset
-//   };
-// }
+const mouseDownSub = (data) => {
+  story.startDrag = data.event;
+  itemDragId.value = data.id;
+}
+
+const startDrag = (e, itemId) => {
+  if(story.startDrag !== 'sub'){
+    return;
+  }
+  e.dataTransfer.dropEffect = 'move';
+  e.dataTransfer.effectAllowed = 'move';
+  setTimeout(()=>{
+    story.setDraggingF2(itemId);
+  },0)
+}
+
+const enterDrag = (e, itemId) => {
+  setTimeout(()=>{
+    let draggingItem = story.staticSubFolder.find(i=>i.dragging === true);
+    if(itemId !== draggingItem?.id){
+      story.setDroppingF2(itemId);
+    }
+  },0)
+}
+
+const leaveDrag = (e, itemId) => {
+  story.removeDroppingF2();
+}
+
+const endDrag = (e, itemId) => {
+  itemDragId.value = false;
+  story.startDrag = '';
+  setTimeout(()=>{
+    story.removeDroppingF2();
+    story.removeDraggingF2();
+  },100)
+
+}
+const onDrop = (e, itemId) => {
+  let targetDrag, targetDrop, indexTargetDrag, indexTargetDrop;
+  itemDragId.value = false;
+
+  targetDrop = story.staticSubFolder.find(i => i.id === itemId);
+
+  if (story.startDrag === 'nocat') {
+    targetDrag = story.staticOutFolder.find(i => i.dragging === true);
+  } else {
+    targetDrag = story.staticSubFolder.find(i => i.dragging === true);
+  }
+
+  story.removeDroppingF3();
+  story.removeDraggingF3();
+  story.removeDroppingF2();
+  story.removeDraggingF2();
+
+  targetDrag.parentId = targetDrop?.parentId;
+
+  story.staticSubFolder.map((el, i) => {
+    if (el.id === targetDrag.id) {
+      indexTargetDrag = i;
+    }
+    if (el.id === itemId) {
+      indexTargetDrop = i;
+    }
+  });
+
+  if (story.startDrag === 'nocat') {
+    story.staticOutFolder.map((el, i) => {
+      if (el.id === targetDrag.id) {
+        indexTargetDrag = i;
+      }
+    });
+    story.staticOutFolder.splice(indexTargetDrag, 1);
+    story.staticSubFolder.splice(indexTargetDrop, 0, targetDrag);
+  } else {
+    story.staticSubFolder.splice(indexTargetDrag, 1);
+    story.staticSubFolder.splice(indexTargetDrop, 0, targetDrag);
+  }
+  story.startDrag = '';
+}
 
 
 </script>
@@ -93,7 +184,7 @@ const mouseDown = (e) => {
   background: #fff;
 
   &.dragging {
-    box-shadow: 3px 5px 7px #000;
+    box-shadow: 0px 3px 16px rgba(0, 102, 255, 0.7);
   }
 
   .name {
@@ -149,6 +240,43 @@ const mouseDown = (e) => {
     bottom: 0;
     width: 20px;
     background: linear-gradient(90deg, transparent 0%, #fff 100%);
+  }
+}
+
+.sub-folders {
+  margin-left: 16px;
+  li {
+    transition: all 0.3s cubic-bezier(1, 0.5, 0.8, 1);
+    &.dragging {
+      position: relative;
+      &:before {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        background:#DFE4EF;
+        z-index: 1;
+      }
+    }
+    &.dropping{
+      border-bottom: 5px solid #0066FF;
+    }
+    &.start-drag {
+      position: relative;
+      &:after {
+        content: "";
+        display: block;
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        bottom: 0;
+        z-index: 999;
+      }
+    }
   }
 }
 </style>

@@ -1,5 +1,5 @@
 <template>
-  <div class="item-sub-folder" draggable="true">
+  <div class="item-sub-folder">
     <h3 class="name">{{ item?.name }}</h3>
     <ul class="colors" v-if="item?.colors?.length">
       <li v-for="color in item?.colors"><span :style="{background:color}"></span></li>
@@ -9,7 +9,7 @@
     <div class="icons">
       <IconEdit/>
       <IconDelete style="width: 19px; height: 21px;" @click="story.deleteSubFolder(item)"/>
-      <IconMove style="width: 16px; height: 23px;"/>
+      <IconMove style="width: 16px; height: 23px;" @mousedown.left="mouseDownSub"/>
     </div>
   </div>
 </template>
@@ -28,7 +28,13 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['mouseDownSub'])
+
 const story = useFoldersStore();
+
+const mouseDownSub = () => {
+  emit('mouseDownSub', {'id': props.item.id, 'event' : 'sub'});
+}
 
 </script>
 
@@ -37,9 +43,8 @@ const story = useFoldersStore();
   display: flex;
   align-items: center;
   border:1px solid #DFE4EF;
-  padding:5px 16px;
+  padding:5px 14px 5px 16px;
   margin-top: -1px;
-  margin-left: 16px;
 
   * {
     line-height: 1.2;

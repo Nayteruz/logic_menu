@@ -8,7 +8,7 @@
     <div class="icons">
       <IconEdit/>
       <IconDelete style="width: 19px; height: 21px;" @click="story.deleteNoFolder(item)"/>
-      <IconMove style="width: 16px; height: 23px;"/>
+      <IconMove style="width: 16px; height: 23px;" @mousedown.left="mouseDownNo"/>
     </div>
   </div>
 </template>
@@ -26,7 +26,13 @@ const props = defineProps({
   },
 });
 
+const emit = defineEmits(['mouseDownNo'])
+
 const story = useFoldersStore();
+
+const mouseDownNo = () => {
+  emit('mouseDownNo', {'id': props.item.id, 'event' : 'nocat'});
+}
 
 </script>
 
